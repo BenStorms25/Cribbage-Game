@@ -80,6 +80,7 @@ def getPegChoice(hand1):
 def getAndPlayCardComputer(hand2, count):
 
     random.shuffle(hand2)
+
     try:
         CPUcardOfChoice = hand2[0]
     except IndexError:
@@ -263,16 +264,45 @@ def playRoundStartComputer(hand1, hand2):
 
         #computers turn:
 
-        displayPlayCount(count)
+        if(len(hand1) == 0 or len(hand2) == 0):
+            compareHandLengths(hand1, hand2)
+            break
 
-        hand2, count = getAndPlayCardComputer(hand2, count)
+
+        displayPlayCount(count)
+    #players turn
+        oldCount = count
+        
+
+        try:
+            hand2, count = getAndPlayCardComputer(hand2, count)
+        except TypeError:
+            #this runs if the player has no more cards left to play.
+            break
+
+        if(count == oldCount):
+            computerGivesGo()
+            playRoundStartComputer(hand1, hand2)
+            #break
+        if(count >= 31):
+            break
             
         displayPlayCount(count)
+    #Then take the computers turn
+        oldCount = count
 
-        #take players turn next:
         try:
             hand1, count = getAndPlayCardPlayer(hand1, count)
         except TypeError:
+            #this runs if the computer has no more cards left.  
+            break
+
+        if(count == oldCount):
+            playerGivesGo()
+            #if the computer gives a go, then start a new round of play with the computer starting the play. 
+            playRoundStartPlayer(hand1, hand2)
+            
+        if(count >= 31):
             break
         
 
@@ -347,41 +377,9 @@ def initiatePlay(hand1, hand2):
         #do evertthing in the if statement backwards, so that the computer starts.
         while(len(hand1) > 0 and len(hand2) > 0):
 
-            count = 0
-            while(count <= 31):
+            playRoundStartComputer(hand1, hand2)
 
-                #get computer card and remove from hand, add to count and evaluate for points. 
-
-                random.shuffle(hand2)
-                CPUcardOfChoice = hand2[0]
-                hand2.remove(CPUcardOfChoice)
-
-                try:
-                    count += int(CPUcardOfChoice.value)
-                except ValueError:
-                    count += 10
-
-                displayPlayMove("computer",CPUcardOfChoice.value,count)
-
-                computerPegEval(count)
-
-                #get players card, remove from total hand, and eval points.
-
-                displayPlayCount(count)
-                displayHand(hand1)
-                numberChoice = int(input("What card would you like to play? "))
-                cardOfChoice = hand1[numberChoice - 1]
-
-                #add value of card to count, eval 15s, and remove chosen card from players hand. 
-
-                try:
-                    count += int(cardOfChoice.value)
-                except ValueError:
-                    count += 10
-
-                playerPegEval(count)
-                hand1.remove(cardOfChoice)
-                displayPlayMove("player",cardOfChoice.value,count)
+        compareHandLengths(hand1,hand2)
 
 
     return hand1Copy, hand2Copy
@@ -398,18 +396,16 @@ def flipCoinForFirstTurn():
 
 def revealCard(deck):
 
-
-
     topCard = deck[0]
+
+    if(topCard.value == 11):
+        topCard.value = "Jack"
+    elif(topCard.value == 12):
+        topCard.value = "Queen"
+    elif(topCard.value == 13):
+        topCard.value = "King"
+
     topCardVal = topCard.value
-
-    if(topCardVal == 11):
-        topCardVal = "Jack"
-    elif(topCardVal == 12):
-        topCardVal == "Queen"
-    elif(topCardVal == 13):
-        topCardVal = "King"
-
 
     for remaining in range(3, 0, -1):
         sys.stdout.write("\r")
@@ -421,9 +417,9 @@ def revealCard(deck):
     sys.stdout.write("\r" + str(topCardVal) + " of " + str(topCard.suit) + " was drawn from the deck!\n" + "=====================================\n")
     
     if(topCard.value == "Jack" and playersTurn == True):
-        print("\nThe player cut a jack, giving them a point.\n")
+        print("\nThe player cut a Jack, giving them a point.\n")
     elif(topCard.value == "Jack" and playersTurn == False):
-        print("\nThe computer cut a jack, giving it a point.\n")
+        print("\nThe computer cut a Jack, giving it a point.\n")
 
     return topCard
     
@@ -941,9 +937,9 @@ def score_runs(hand1):
 
 def countFifteensSingular(hand):
 
-    handVals = []
     calculationList = []
     fifteens = 0
+    handVals = []
 
     #take all values from the hand and add them to a separate list of values.
 
@@ -961,15 +957,15 @@ def countFifteensSingular(hand):
     
     
     for perm in handValsPerm:
-       
+    
         for value in perm:
 
             calculationList.append(value)
 
             if(sum(calculationList) == 15 and len(calculationList) == 5):
                 fifteens += .1
-            elif(sum(calculationList) == 15 and len(calculationList) == 3):
-                fifteens += 1
+            elif(sum(calculationList) == 15 and len(calculationList) == 4):
+                fifteens += .5
             elif(sum(calculationList) == 15):
                 fifteens += 1
                 continue
@@ -995,6 +991,7 @@ def cribCount(hand, turn):
         playerScore += score_runs(hand)
         playerScore += evaluatePairs(hand)
         playerScore += countFifteensSingular(hand)
+
     elif(turn == False):
         #computers crib
         #evaluate all cards:
@@ -1022,6 +1019,27 @@ def displayCrib(hand, turn):
 
         print("=====================================")
 
+def displayCribOutcome(turn, pointsEarned):
+
+    global playerScore
+    global computerScore
+
+    if(turn == True):
+        print("\nThe player earned " + str(pointsEarned) + " points in the crib, making the players total score: " + str(playerScore))
+    elif(turn == False):
+        print("\nThe computer earned " + str(pointsEarned) + " points in the crib, making the computers total score: " + str(computerScore))
+
+def checkToSeeIfAnyoneHasWon():
+    
+    global playerScore
+    global computerScore
+
+    if(playerScore >= 121):
+        print("The player has won the game, congratulations!")
+        exit
+    elif(computerScore >= 121):
+        print("The computer has beaten you, get better.")
+        exit
 
 
 def main():
@@ -1044,8 +1062,8 @@ def main():
 
         #flip a coin for the first turn.
 
-       # flipCoinForFirstTurn()
-        playerTurn = True
+        flipCoinForFirstTurn()
+        
     else: 
         suits = ["spades","clubs","hearts","diamonds"]
         deck = [Card(value, suit) for value in range(1, 14) for suit in suits]
@@ -1122,7 +1140,7 @@ def main():
 
     print("The play is about to begin.\n")
 
-    #hand1, hand2 = initiatePlay(hand1, hand2)
+    hand1, hand2 = initiatePlay(hand1, hand2)
 
 
 # count up the points in each hand
@@ -1160,15 +1178,26 @@ def main():
 
     #count the points in the crib and add them to each players score depending on who's turn it is. 
 
+    #see who's turn it is, and take down the points they have at this time before the crib count.
+    if(playersTurn == True):
+        oldScore = playerScore
+    elif(playersTurn == False):
+        oldScore = computerScore
+    
     #now count the crib. 
-
-    #display crib and who has it
-    displayCrib(cribCards, playersTurn)
     #add top card to the crib
     cribCards.append(topCard)
+    #display crib and who has it
+    displayCrib(cribCards, playersTurn)
     #count the crib
     cribCount(cribCards, playersTurn)
+    #display crib results
+    if(playersTurn == True):
+        pointsFromCrib = playerScore - oldScore
+    elif(playersTurn == False):
+        pointsFromCrib = computerScore - oldScore
 
+    displayCribOutcome(playersTurn, pointsFromCrib)
     
     
     
@@ -1176,11 +1205,7 @@ def main():
     #display the hand as well as the points earned this round.
 
 
-    displayHand(hand1)
-    print("\nThe player's hand scores " + str(playerPointsEarnedThisRound) + " making the player's total score: " + str(playerScore) + "\n")
-    displayComputerHand(hand2)
-    print("\nThe computer's hand scores " + str(computerPointsEarnedThisRound) + " making the computer's total score: " + str(computerScore) + "\n") 
-
+    
     
     
 
@@ -1191,10 +1216,9 @@ def main():
         roundNumber += 1
         main()
     
-    if(playerScore >= 121):
-        print("The player has won the game, congratulations!")
-    elif(computerScore >= 121):
-        print("The computer has beaten you, get better.")
+
+    checkToSeeIfAnyoneHasWon()
+    #now just program this function to run every time either playerscore or computerscore has been altered. 
 
     
 
