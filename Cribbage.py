@@ -14,6 +14,16 @@ computerScore = 0
 
 roundNumber = 0
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 class Card:
     def __init__(self, value, suit):
@@ -176,9 +186,11 @@ def playerPegEval(pegCount):
     if(pegCount == 15):
         print("The player made 15, giving 2 points to the player.\n")
         playerScore += 2
+        checkToSeeIfAnyoneHasWon()
     if(pegCount == 31):
         print("The player scored exactly 31, giving 2 point to the player.\n")
         playerScore += 2
+        checkToSeeIfAnyoneHasWon()
     
 
     return
@@ -192,21 +204,25 @@ def computerPegEval(pegCount):
     if(pegCount == 15):
         print("The computer made 15, giving 2 points to the computer.\n")
         computerScore += 2
+        checkToSeeIfAnyoneHasWon()
     if(pegCount == 31):
         print("The computer scored exactly 31, giving 2 point to the computer.\n")
         computerScore += 2
+        checkToSeeIfAnyoneHasWon()
         
 def computerGivesGo():
 
     global playerScore
     print("The computer gives a go, giving a point to the player.\n")
     playerScore += 1 
+    checkToSeeIfAnyoneHasWon()
 
 def playerGivesGo():
 
     global computerScore
     print("The player gives a go, giving a point to the computer.\n")
     computerScore += 1
+    checkToSeeIfAnyoneHasWon()
 
 def playRoundStartPlayer(hand1, hand2):
 
@@ -316,9 +332,11 @@ def compareHandLengths(hand1, hand2):
     if(len(hand1) > len(hand2)):
         print("The player has the last card, so the player gets a point.")
         playerScore += 1
+        checkToSeeIfAnyoneHasWon()
     elif(len(hand2) > len(hand1)):
         print("The computer has the last card, so the computer gets a point.")
         computerScore += 1
+        checkToSeeIfAnyoneHasWon()
 
 def displayPlayMove(player, value, totalCount):
 
@@ -396,6 +414,9 @@ def flipCoinForFirstTurn():
 
 def revealCard(deck):
 
+    global playerScore
+    global computerScore
+
     topCard = deck[0]
 
     if(topCard.value == 11):
@@ -418,8 +439,13 @@ def revealCard(deck):
     
     if(topCard.value == "Jack" and playersTurn == True):
         print("\nThe player cut a Jack, giving them a point.\n")
+        playerScore += 1
+        checkToSeeIfAnyoneHasWon()
+
     elif(topCard.value == "Jack" and playersTurn == False):
         print("\nThe computer cut a Jack, giving it a point.\n")
+        computerScore += 1 
+        checkToSeeIfAnyoneHasWon()
 
     return topCard
     
@@ -468,6 +494,7 @@ def countFifteens(hand1, hand2):
                 
     totalPointsFromFifteens = 2*(int(fifteens/12))
     playerScore += totalPointsFromFifteens
+    
     
     #and now for hand2
 
@@ -1071,7 +1098,10 @@ def main():
         #negate players turn bool:
         playersTurn = not(playersTurn)
 
-
+    if(playersTurn == True):
+        print(bcolors.OKGREEN + "\nIt is the player's turn." + bcolors.ENDC)
+    elif(playersTurn == False):
+        print(bcolors.OKGREEN + "It is the computer's turn." + bcolors.ENDC)
 
 #takes note of players current score so that the points made this round can be calculated and displayed after the point addition. 
 
@@ -1176,6 +1206,7 @@ def main():
     displayComputerHand(hand2)
     print("\nThe computer's hand scores " + str(computerPointsEarnedThisRound) + " making the computer's total score: " + str(computerScore) + "\n") 
 
+    checkToSeeIfAnyoneHasWon()
     #count the points in the crib and add them to each players score depending on who's turn it is. 
 
     #see who's turn it is, and take down the points they have at this time before the crib count.
@@ -1198,16 +1229,8 @@ def main():
         pointsFromCrib = computerScore - oldScore
 
     displayCribOutcome(playersTurn, pointsFromCrib)
-    
-    
-    
 
-    #display the hand as well as the points earned this round.
-
-
-    
-    
-    
+    # display the hand as well as the points earned this round.
 
     while(playerScore < 121 and computerScore < 121):
 
