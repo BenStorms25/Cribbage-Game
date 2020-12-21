@@ -7,7 +7,7 @@ import copy
 from collections import Counter
 from typing import List
 
-
+playHasEnded = False
 playersTurn = True
 playerScore = 0
 computerScore = 0
@@ -30,11 +30,20 @@ class Card:
         self.value = value
         self.suit = suit
 
+def delayPrint(seconds):
+
+    for i in range(seconds, 0, -1):
+            sys.stdout.flush()
+            time.sleep(1)
+
+
 def displayComputerHand(hand1):
     print("Computer Hand: \n=====================================")
 
     for card in hand1:
         print(str(hand1.index(card)+1) + ": " + str(card.value) + " of " + str(card.suit))
+
+    print("=====================================")
 
 def displayHand(hand1):
     print("\nPlayer hand: \n=====================================")
@@ -54,7 +63,7 @@ def placeCardInCrib(hand1, hand2):
     try:
         cribList.append(hand1[int(cribChoice) - 1])
         del hand1[int(cribChoice) - 1]
-    except IndexError:
+    except:
         print("Please select a number associated with a card.")
         placeCardInCrib(hand1,hand2)
 
@@ -65,7 +74,7 @@ def placeCardInCrib(hand1, hand2):
 
 def displayPlayCount(pegCount):
 
-    print("\nCount: " + str(pegCount))
+    print(bcolors.OKBLUE +"\nCount: " + bcolors.ENDC + bcolors.WARNING + str(pegCount) + bcolors.ENDC)
 
 def getPegChoice(hand1):
 
@@ -184,11 +193,11 @@ def playerPegEval(pegCount):
 
 
     if(pegCount == 15):
-        print("The player made 15, giving 2 points to the player.\n")
+        print("The player made 15, giving 2 points to the player.")
         playerScore += 2
         checkToSeeIfAnyoneHasWon()
     if(pegCount == 31):
-        print("The player scored exactly 31, giving 2 point to the player.\n")
+        print("The player scored exactly 31, giving 2 points to the player.")
         playerScore += 2
         checkToSeeIfAnyoneHasWon()
     
@@ -213,14 +222,14 @@ def computerPegEval(pegCount):
 def computerGivesGo():
 
     global playerScore
-    print("The computer gives a go, giving a point to the player.\n")
+    print("\nThe computer gives a go, giving a point to the player.")
     playerScore += 1 
     checkToSeeIfAnyoneHasWon()
 
 def playerGivesGo():
 
     global computerScore
-    print("The player gives a go, giving a point to the computer.\n")
+    print("The player gives a go, giving a point to the computer.")
     computerScore += 1
     checkToSeeIfAnyoneHasWon()
 
@@ -251,7 +260,9 @@ def playRoundStartPlayer(hand1, hand2):
             #break
         if(count >= 31):
             break
-            
+        #set a timer to delay the printing of the messages, since it's hard to read everything printed if printed all at once.
+        delayPrint(1)
+        
         displayPlayCount(count)
     #Then take the computers turn
         oldCount = count
@@ -267,7 +278,7 @@ def playRoundStartPlayer(hand1, hand2):
             #if the computer gives a go, then start a new round of play with the computer starting the play. 
             playRoundStartComputer(hand1, hand2)
             
-        if(count >= 31):
+        if(count > 31):
             break
 
 
@@ -286,6 +297,7 @@ def playRoundStartComputer(hand1, hand2):
 
 
         displayPlayCount(count)
+        delayPrint(1)
     #players turn
         oldCount = count
         
@@ -306,7 +318,7 @@ def playRoundStartComputer(hand1, hand2):
         displayPlayCount(count)
     #Then take the computers turn
         oldCount = count
-
+        delayPrint(1)
         try:
             hand1, count = getAndPlayCardPlayer(hand1, count)
         except TypeError:
@@ -328,32 +340,38 @@ def compareHandLengths(hand1, hand2):
 
     global playerScore
     global computerScore
+    global playHasEnded
 
     if(len(hand1) > len(hand2)):
         print("The player has the last card, so the player gets a point.")
         playerScore += 1
+        playHasEnded = True
         checkToSeeIfAnyoneHasWon()
     elif(len(hand2) > len(hand1)):
         print("The computer has the last card, so the computer gets a point.")
         computerScore += 1
+        playHasEnded = True
         checkToSeeIfAnyoneHasWon()
+
+        
 
 def displayPlayMove(player, value, totalCount):
 
     if(value == 8):
-        print("\nThe " + player + " played an " + str(value) + ". Making the total count " + str(totalCount))
+        print("\nThe " + player + " played an " + str(value) + ". Making the total count " + bcolors.WARNING + str(totalCount) + bcolors.ENDC)
     else:
-        print("\nThe " + player + " played a " + str(value) + ". Making the total count " + str(totalCount))
+        print("\nThe " + player + " played a " + str(value) + ". Making the total count " +  bcolors.WARNING + str(totalCount) + bcolors.ENDC)
     
 def initiatePlay(hand1, hand2):
 
     global playersTurn
     global playerScore
     global computerScore
+    global playHasEnded
 
     #print welcome message
 
-    
+    playHasEnded = False
 
     #put each hand into separate list of only values.
 
@@ -386,18 +404,26 @@ def initiatePlay(hand1, hand2):
             #player plays first:
             playRoundStartPlayer(hand1, hand2)
 
-        compareHandLengths(hand1,hand2)
+        if(playHasEnded == False):
+            compareHandLengths(hand1,hand2)
+        else:
+            return hand1Copy, hand2Copy
+    
 
     elif(playersTurn == False):
 
         print("It is the computers turn, so the computer will begin the play.")
+        delayPrint(2)
 
         #do evertthing in the if statement backwards, so that the computer starts.
         while(len(hand1) > 0 and len(hand2) > 0):
 
             playRoundStartComputer(hand1, hand2)
 
-        compareHandLengths(hand1,hand2)
+        if(playHasEnded == False):
+            compareHandLengths(hand1,hand2)
+        else:
+            return hand1Copy, hand2Copy
 
 
     return hand1Copy, hand2Copy
@@ -435,20 +461,20 @@ def revealCard(deck):
         time.sleep(1)
 
     print("\n=====================================")
-    sys.stdout.write("\r" + str(topCardVal) + " of " + str(topCard.suit) + " was drawn from the deck!\n" + "=====================================\n")
+    print(bcolors.WARNING + "\r" + str(topCardVal) + " of " + str(topCard.suit) + bcolors.ENDC + " was drawn from the deck!\n" + "=====================================\n")
     
     if(topCard.value == "Jack" and playersTurn == True):
-        print("\nThe player cut a Jack, giving them a point.\n")
+        print("The player cut a Jack, giving them a point.\n")
         playerScore += 1
         checkToSeeIfAnyoneHasWon()
 
     elif(topCard.value == "Jack" and playersTurn == False):
-        print("\nThe computer cut a Jack, giving it a point.\n")
+        print("The computer cut a Jack, giving it a point.\n")
         computerScore += 1 
         checkToSeeIfAnyoneHasWon()
 
     return topCard
-    
+
 def countFifteens(hand1, hand2):
 
 
@@ -1052,9 +1078,9 @@ def displayCribOutcome(turn, pointsEarned):
     global computerScore
 
     if(turn == True):
-        print("\nThe player earned " + str(pointsEarned) + " points in the crib, making the players total score: " + str(playerScore))
+        print("\nThe player earned " + bcolors.FAIL +  str(pointsEarned) + bcolors.ENDC + " points in the crib, making the players total score: " + bcolors.OKGREEN + str(playerScore) + bcolors.ENDC)
     elif(turn == False):
-        print("\nThe computer earned " + str(pointsEarned) + " points in the crib, making the computers total score: " + str(computerScore))
+        print("\nThe computer earned " + bcolors.FAIL + str(pointsEarned) + bcolors.ENDC + " points in the crib, making the computers total score: " + bcolors.OKGREEN + str(computerScore) + bcolors.ENDC)
 
 def checkToSeeIfAnyoneHasWon():
     
@@ -1068,6 +1094,122 @@ def checkToSeeIfAnyoneHasWon():
         print("The computer has beaten you, get better.")
         exit
 
+def countPoints(hand1, hand2, topCard, cribCards):
+
+    global playersTurn
+    global computerScore
+    global playerScore
+
+    
+    hand1.append(topCard)
+    hand2.append(topCard)
+
+    #create two variables used to count the points made by both the player and the computer this round.
+
+    lastPlayerScore = playerScore
+    lastComputerScore = computerScore
+
+    #count the points
+
+    if(playersTurn == True):
+
+        #since player has the crib, the computer will count first.
+
+        computerScore += countFifteensSingular(hand2)
+        computerScore += score_runs(hand2)
+        computerScore += evaluatePairs(hand2)
+        computerPointsEarnedThisRound = computerScore - lastComputerScore
+        displayComputerHand(hand2)
+        delayPrint(1)
+        print("\nThe computer's hand scores " + bcolors.FAIL + str(computerPointsEarnedThisRound) + bcolors.ENDC + 
+        " making the computer's total score: " + bcolors.OKGREEN + str(computerScore) + bcolors.ENDC + "\n")
+        delayPrint(1)
+        checkToSeeIfAnyoneHasWon()
+
+        #now count the players hand as well as the crib.
+
+        playerScore += countFifteensSingular(hand1)
+        playerScore += score_runs(hand1)
+        playerScore += evaluatePairs(hand1)
+        playerPointsEarnedThisRound = playerScore - lastPlayerScore
+        delayPrint(1)
+        displayHand(hand1)
+        delayPrint(1)
+        print("\nThe player's hand scores " + bcolors.FAIL + str(playerPointsEarnedThisRound) + bcolors.ENDC + 
+        " making the player's total score: " + bcolors.OKGREEN + str(playerScore) + bcolors.ENDC + "\n")
+        delayPrint(1)
+        checkToSeeIfAnyoneHasWon()
+
+
+        if(playersTurn == True):
+            oldScore = playerScore
+        elif(playersTurn == False):
+            oldScore = computerScore
+
+        #count crib points
+        cribCards.append(topCard)
+        #display crib and who has it
+        displayCrib(cribCards, playersTurn)
+        delayPrint(1)
+        #count the crib
+        cribCount(cribCards, playersTurn)
+        #display crib results
+        if(playersTurn == True):
+            pointsFromCrib = playerScore - oldScore
+        elif(playersTurn == False):
+            pointsFromCrib = computerScore - oldScore
+        displayCribOutcome(playersTurn, pointsFromCrib)
+        delayPrint(1)
+        
+
+
+    elif(playersTurn == False):
+
+        #this is where the computer has the crib.
+        playerScore += countFifteensSingular(hand1)
+        playerScore += score_runs(hand1)
+        playerScore += evaluatePairs(hand1)
+        playerPointsEarnedThisRound = playerScore - lastPlayerScore
+        delayPrint(1)
+        displayHand(hand1)
+        delayPrint(1)
+        print("\nThe player's hand scores " + bcolors.FAIL + str(playerPointsEarnedThisRound) + bcolors.ENDC + 
+        " making the player's total score: " + bcolors.OKGREEN + str(playerScore) + bcolors.ENDC + "\n")
+        delayPrint(1)
+        checkToSeeIfAnyoneHasWon()
+
+        #then count computer's hand as well as computers crib.
+
+        computerScore += countFifteensSingular(hand2)
+        computerScore += score_runs(hand2)
+        computerScore += evaluatePairs(hand2)
+        computerPointsEarnedThisRound = computerScore - lastComputerScore
+        displayComputerHand(hand2)
+        delayPrint(1)
+        print("\nThe computer's hand scores " + bcolors.FAIL + str(computerPointsEarnedThisRound) + bcolors.ENDC + 
+        " making the computer's total score: " + bcolors.OKGREEN + str(computerScore) + bcolors.ENDC + "\n")
+        delayPrint(1)
+        checkToSeeIfAnyoneHasWon()
+
+        if(playersTurn == True):
+            oldScore = playerScore
+        elif(playersTurn == False):
+            oldScore = computerScore
+
+        #count crib points
+        cribCards.append(topCard)
+        #display crib and who has it
+        displayCrib(cribCards, playersTurn)
+        delayPrint(1)
+        #count the crib
+        cribCount(cribCards, playersTurn)
+        #display crib results
+        if(playersTurn == True):
+            pointsFromCrib = playerScore - oldScore
+        elif(playersTurn == False):
+            pointsFromCrib = computerScore - oldScore
+        displayCribOutcome(playersTurn, pointsFromCrib)
+        delayPrint(1)
 
 def main():
 
@@ -1101,7 +1243,7 @@ def main():
     if(playersTurn == True):
         print(bcolors.OKGREEN + "\nIt is the player's turn." + bcolors.ENDC)
     elif(playersTurn == False):
-        print(bcolors.OKGREEN + "It is the computer's turn." + bcolors.ENDC)
+        print(bcolors.OKGREEN + "\nIt is the computer's turn." + bcolors.ENDC)
 
 #takes note of players current score so that the points made this round can be calculated and displayed after the point addition. 
 
@@ -1143,8 +1285,6 @@ def main():
             hand2[card].value = "King"
 
 
-    
-
 # let user select which cards to put into the crib.
 
 
@@ -1161,13 +1301,12 @@ def main():
 
 # reveal card drawn from top of deck
 
+
     topCard = revealCard(deck)
+    delayPrint(2)
     
     
 # initiate the play process.
-# 
-# 
-
     print("The play is about to begin.\n")
 
     hand1, hand2 = initiatePlay(hand1, hand2)
@@ -1175,62 +1314,9 @@ def main():
 
 # count up the points in each hand
 
-    #append topcard to list of both hands so that counting may include the drawn card. 
+    countPoints(hand1,hand2,topCard,cribCards)
 
-    hand1.append(topCard)
-    hand2.append(topCard)
-
-    #create two variables used to count the points made by both the player and the computer this round.
-
-    lastPlayerScore = playerScore
-    lastComputerScore = computerScore
-
-    playerScore += countFifteensSingular(hand1)
-    computerScore += countFifteensSingular(hand2)
-
-    playerScore += score_runs(hand1)
-    computerScore += score_runs(hand2)
-    playerScore += evaluatePairs(hand1)
-    computerScore += evaluatePairs(hand2)
-
-    #add this rounds points to total player/computer score.
-
-    #calculate points earned this round.
-
-    playerPointsEarnedThisRound = playerScore - lastPlayerScore
-    computerPointsEarnedThisRound = computerScore - lastComputerScore
-
-    
-    displayHand(hand1)
-    print("\nThe player's hand scores " + str(playerPointsEarnedThisRound) + " making the player's total score: " + str(playerScore) + "\n")
-    displayComputerHand(hand2)
-    print("\nThe computer's hand scores " + str(computerPointsEarnedThisRound) + " making the computer's total score: " + str(computerScore) + "\n") 
-
-    checkToSeeIfAnyoneHasWon()
-    #count the points in the crib and add them to each players score depending on who's turn it is. 
-
-    #see who's turn it is, and take down the points they have at this time before the crib count.
-    if(playersTurn == True):
-        oldScore = playerScore
-    elif(playersTurn == False):
-        oldScore = computerScore
-    
-    #now count the crib. 
-    #add top card to the crib
-    cribCards.append(topCard)
-    #display crib and who has it
-    displayCrib(cribCards, playersTurn)
-    #count the crib
-    cribCount(cribCards, playersTurn)
-    #display crib results
-    if(playersTurn == True):
-        pointsFromCrib = playerScore - oldScore
-    elif(playersTurn == False):
-        pointsFromCrib = computerScore - oldScore
-
-    displayCribOutcome(playersTurn, pointsFromCrib)
-
-    # display the hand as well as the points earned this round.
+#loop the main function every time both the player's and computer's score is less than 31.
 
     while(playerScore < 121 and computerScore < 121):
 
@@ -1241,7 +1327,7 @@ def main():
     
 
     checkToSeeIfAnyoneHasWon()
-    #now just program this function to run every time either playerscore or computerscore has been altered. 
+   
 
     
 
