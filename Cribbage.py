@@ -672,62 +672,6 @@ def countPairsRuns(hand1):
     return totalpoints
 
 
-    # for i in range(len(hand1Vals)):
-    #     try:
-    #         if(hand1Vals[i] == (hand1Vals[i + 1] - 1) and hand1Vals[i] == (hand1Vals[i + 2] - 2) 
-    #         and hand1Vals[i] == (hand1Vals[i + 3] - 3) and hand1Vals[i] == (hand1Vals[i + 4] - 4)):
-    #             playerScore += 5
-    #             break
-    #         else: 
-    #             pass
-    #     except IndexError:
-    #         pass
-    #     try:
-    #         if(hand1Vals[i] == (hand1Vals[i + 1] - 1) and hand1Vals[i] == (hand1Vals[i + 2] - 2) 
-    #         and hand1Vals[i] == (hand1Vals[i + 3] - 3)):
-    #             playerScore += 4
-    #         else:
-    #             pass
-    #     except IndexError:
-    #         pass
-    #     try:
-    #         if(hand1Vals[i] == (hand1Vals[i + 1] - 1) and hand1Vals[i] == (hand1Vals[i + 2] - 2) 
-    #         and hand1Vals[i] == (hand1Vals[i + 3] - 3)):
-    #             playerScore += 3
-    #             break
-    #         else:
-    #             pass
-    #     except IndexError:
-    #         pass
-
-    #run evaluation
-
-
-    # for i in range(len(hand1Vals)):
-    #     if(i == 0):
-    #         if(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2 and hand1Vals[i] == hand1Vals[i+3] - 3 and hand1Vals[i] == hand1Vals[i+4] - 4):
-    #             totalPoints += 5
-    #             break
-    #         elif(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2 and hand1Vals[i] == hand1Vals[i+3] - 3):
-    #             totalPoints += 4
-    #         elif(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2):
-    #             totalPoints += 3
-    #     elif(i == 1):
-    #         if(totalPoints == 4):
-    #             pass
-    #         elif(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2 and hand1Vals[i] == hand1Vals[i+3] - 3):
-    #                 totalPoints += 4
-    #         if(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2):
-    #             totalPoints  += 3
-    #     elif(i == 2):
-    #         if(hand1Vals[i] == hand1Vals[i+1] - 1 and hand1Vals[i] == hand1Vals[i+2] - 2):
-    #             totalPoints += 3
-
-        
-    
-         
-
-    # https://old.reddit.com/r/learnpython/comments/k3l53j/cribbage_run_evaluator_in_python/
 
 def multipleDuplicates(hand) -> bool:
 
